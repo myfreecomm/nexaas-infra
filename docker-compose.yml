@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.1
+    ports:
+      - '${ZOOKEEPER_PORT}:${ZOOKEEPER_PORT}'
+    networks:
+      - nexaas
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=${ZOOKEEPER_CLIENT_PORT}
+      - ZOOKEEPER_TICK_TIME=${ZOOKEEPER_TICK_TIME}
+      - ZOOKEEPER_SYNC_LIMIT=${ZOOKEEPER_SYNC_LIMIT}
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.1
+    ports:
+      - '${KAFKA_PORT}:${KAFKA_PORT}'
+    depends_on:
+      - zookeeper
+    networks:
+      - nexaas
+    environment:
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=${KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR}
+      - KAFKA_ZOOKEEPER_CONNECT=${KAFKA_ZOOKEEPER_CONNECT}
+      - KAFKA_ADVERTISED_LISTENERS=${KAFKA_ADVERTISED_LISTENERS}
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.4.1
+    depends_on:
+      - kafka
+    ports:
+      - '${SCHEMA_REGISTRY_PORT}:${SCHEMA_REGISTRY_PORT}'
+    networks:
+      - nexaas
+    environment:
+      - SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS=${SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS}
+      - SCHEMA_REGISTRY_HOST_NAME=${SCHEMA_REGISTRY_HOST_NAME}
+      - SCHEMA_REGISTRY_LISTENERS=${SCHEMA_REGISTRY_LISTENERS}
+      - SCHEMA_REGISTRY_DEBUG=${SCHEMA_REGISTRY_DEBUG}
+
+  kafka-connect:
+    image: confluentinc/cp-kafka-connect:7.4.1
+    ports:
+      - '${KAFKA_CONNECT_PORT}:${KAFKA_CONNECT_PORT}'
+    networks:
+      - nexaas
+    depends_on:
+      - kafka
+    environment:
+      - CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR=${CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR}
+      - CONNECT_STATUS_STORAGE_REPLICATION_FACTOR=${CONNECT_STATUS_STORAGE_REPLICATION_FACTOR}
+      - CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR=${CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR}
+      - CONNECT_BOOTSTRAP_SERVERS=${CONNECT_BOOTSTRAP_SERVERS}
+      - CONNECT_REST_PORT=${CONNECT_REST_PORT}
+      - CONNECT_GROUP_ID=${CONNECT_GROUP_ID}
+      - CONNECT_CONFIG_STORAGE_TOPIC=${CONNECT_CONFIG_STORAGE_TOPIC}
+      - CONNECT_OFFSET_STORAGE_TOPIC=${CONNECT_OFFSET_STORAGE_TOPIC}
+      - CONNECT_STATUS_STORAGE_TOPIC=${CONNECT_STATUS_STORAGE_TOPIC}
+      - CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL=${CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL}
+      - CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL=${CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL}
+      - CONNECT_KEY_CONVERTER=${CONNECT_KEY_CONVERTER}
+      - CONNECT_VALUE_CONVERTER=${CONNECT_VALUE_CONVERTER}
+      - CONNECT_REST_ADVERTISED_HOST_NAME=${CONNECT_REST_ADVERTISED_HOST_NAME}
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop:3.31.0
+    depends_on:
+      - kafka
+    ports:
+      - ${KAFDROP_PORT}:${KAFDROP_PORT}
+    networks:
+      - nexaas
+    environment:
+      - KAFKA_BROKERCONNECT=${KAFKA_BROKERCONNECT}
+
+networks:
+  nexaas:
+    name: nexaas
+    driver: overlay
+    attachable: true
