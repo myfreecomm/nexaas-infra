@@ -1,6 +1,6 @@
 # Nexaas Infra
 
-O Nexaas Infra é um projeto criado com o objetivo de centralizar os containers responsáveis por receber e enviar dados, que necessitam transitar entre outros microserviços da Nexaas.
+O Nexaas Infra é um projeto criado com o objetivo de centralizar os containers responsáveis por receber e enviar dados, que necessitam transitar entre os microserviços da Nexaas.
 
 Inicialmente será utilizado para conectar os serviços de messageria com Apache Kafka, Zookeeper, dentre outros. A princípio o projeto funcionará a partir de um arquivo env.sample e docker-compose para subir os containers no ambiente de desenvolvimento.
 
